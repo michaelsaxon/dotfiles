@@ -1,0 +1,12 @@
+{
+    "auto_complete_commit_on_tab": true,
+    "color_scheme": "Packages/One Half Color Schemes/OneHalfLight.tmTheme",
+    "font_face": "Ubuntu Mono",
+    "font_size": 18,
+    "ignored_packages":
+    [
+        "Vintage"
+    ],
+    "scroll_past_end": true,
+    "translate_tabs_to_spaces": true
+}
