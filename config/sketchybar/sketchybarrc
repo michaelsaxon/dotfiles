@@ -1,0 +1,209 @@
+# This is a demo config to showcase some of the most important commands.
+# It is meant to be changed and configured, as it is intentionally kept sparse.
+# For a (much) more advanced configuration example see my dotfiles:
+# https://github.com/FelixKratz/dotfiles
+
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+
+
+#source bliss.skbrcolors.sh
+source kanagawa.skbrcolors.sh
+
+##### Bar Appearance #####
+# Configuring the general appearance of the bar.
+# These are only some of the options available. For all options see:
+# https://felixkratz.github.io/SketchyBar/config/bar
+# If you are looking for other colors, see the color picker:
+# https://felixkratz.github.io/SketchyBar/config/tricks#color-picker
+
+sketchybar --bar position=top height=40 blur_radius=30 color=$DEFAULT padding_right=0 padding_left=0
+
+##### Changing Defaults #####
+# We now change some default values, which are applied to all further items.
+# For a full list of all available item properties see:
+# https://felixkratz.github.io/SketchyBar/config/items
+
+default=(
+  padding_left=5
+  padding_right=5
+  icon.font="Hack Nerd Font:Bold:17.0"
+  label.font="TX-02:Bold:17.0"
+  icon.color=$FOREGROUND
+  label.color=$FOREGROUND
+  icon.padding_left=4
+  icon.padding_right=4
+  label.padding_left=4
+  label.padding_right=4
+)
+sketchybar --default "${default[@]}"
+
+##### Adding Mission Control Space Indicators #####
+# Let's add some mission control spaces:
+# https://felixkratz.github.io/SketchyBar/config/components#space----associate-mission-control-spaces-with-an-item
+# to indicate active and available mission control spaces.
+
+sketchybar --add item spacepad left --set spacepad label=" " label.drawing=on \
+	--add item clockpad right --set clockpad label=" " label.drawing=on
+
+#SPACE_ICONS=("1" "2" "3" "4" "5" "6" "7" "8" "9" "10")
+SPACE_ICONS=("󰎦" "󰎩" "󰎬" "󰎮" "󰎰" "󰎵" "󰎸" "󰎻" "󰎾" "󰽾")
+# defined in space.sh
+#SPACE_ICONS_SELECTED=("󰎤" "󰎧" "󰎪" "󰎭" "󰎱" "󰎳" "󰎶" "󰎹" "󰎼" "󰽽")
+for i in "${!SPACE_ICONS[@]}"
+do
+  sid="$(($i+1))"
+  space=(
+    space="$sid"
+    icon="${SPACE_ICONS[i]}"
+    label.drawing=off
+    script="$PLUGIN_DIR/space.sh"
+    click_script="skhd -k \"ctrl -$sid\""
+    #click_script="yabai -m space --focus $sid"
+    icon.font.size=16
+    icon.y_offset="0.5"
+    icon.padding_right=1
+    icon.padding_left=1
+  )
+  sketchybar --add space space."$sid" left --set space."$sid" "${space[@]}"
+done
+
+
+
+##### Adding Left Items #####
+# We add some regular items to the left side of the bar, where
+# only the properties deviating from the current defaults need to be set
+
+# event for catching status change from yabai
+sketchybar --add event window_focus \
+	   --add event title_change
+
+START_BUTTON_COLOR=$BLACK
+
+# nerd font icons useful    
+# stupid powerline tetris thing  
+sketchybar --add item chevron left \
+           --set chevron icon= label.drawing=off icon.font.size="35.6" icon.y_offset=1 icon.color="$START_BUTTON_COLOR" icon.padding_left=0 padding_left=0
+################### Right item stuff
+
+bubble_outline=(
+    background.border_color=$FOREGROUND
+    icon.color=$FOREGROUND
+    label.color=$FOREGROUND
+    background.border_width=1
+    background.drawing="on"
+    background.height=30
+    background.corner_radius=5
+    label.padding_right=10
+    icon.padding_left=10
+    label.padding_right=10
+)
+
+sketchybar --add bracket spaces spacepad '/space\..*/'  \
+	--set spaces background.color="$START_BUTTON_COLOR" background.height=40 padding_left=0 padding_right=0 
+
+sketchybar --add item clock right \
+           --set clock update_freq=10 icon=  script="$PLUGIN_DIR/clock.sh" \
+           icon.drawing=off \
+           --add item battery right \
+           --set battery update_freq=120 script="$PLUGIN_DIR/battery.sh" label.drawing="off" icon.width=30 icon.padding_right=10 icon.align=center \
+	   --set battery "${bubble_outline[@]}" label.width=45 label.align=right label.font.size=15 \
+           --subscribe battery system_woke power_source_change 
+
+
+	   #--set volume update_freq=10 \
+# cpu
+
+#sketchybar --add item cpu right \
+#	   --set cpu label.width=45 label.align=right icon.align=left label.font.size=15 "${bubble_outline[@]}" \
+#           --set cpu  update_freq=2 \
+#                      icon=  \
+#                      script="$PLUGIN_DIR/cpu.sh"
+
+#sketchybar --add item ram right \
+#	   --set ram label.width=45 label.align=right label.font.size=15 icon.align=left icon.width=30 "${bubble_outline[@]}" \
+#           --set ram  update_freq=1 \
+#                      icon= \
+#                      script="$PLUGIN_DIR/ram.sh"
+
+CRT_AMBER=FFB000
+
+graph_options=(
+	icon.font.size=16
+	label.font.size=12
+	graph.color=$FOREGROUND
+	icon.color=$FOREGROUND
+	label.color=$FOREGROUND
+	background.color=$BLACK
+	background.drawing="on"
+	graph.line_width=2
+	graph.fill_color="0x00000000"
+	label.width=0
+	icon.width=0
+	icon.align=left
+	label.align=right
+	icon.padding_left=7
+	label.padding_right=3
+	label.drawing="off"
+	icon.drawing="on"
+)
+
+# 60 wide max, 25 wide min
+sketchybar --add graph cpug right 30 \
+	   --set cpug label="CPU" "${bubble_outline[@]}" "${graph_options[@]}" \
+           --set cpug --set cpug  update_freq=1 \
+                      icon=  \
+                      script="$PLUGIN_DIR/cpu_graph.sh" \
+           --subscribe cpug mouse.entered mouse.exited 
+
+sketchybar --add graph ramg right 30 \
+	   --set ramg label="RAM" "${bubble_outline[@]}" "${graph_options[@]}" \
+           --set ramg update_freq=1 \
+                      icon=  \
+                      script="$PLUGIN_DIR/ram_graph.sh" \
+           --subscribe ramg mouse.entered mouse.exited
+
+sketchybar --add item volume right \
+           --set volume script="$PLUGIN_DIR/volume.sh" label.drawing="on" \
+           --subscribe volume volume_change mouse.clicked \
+	   --set volume label.align=left icon.width=20 icon.align=left "${bubble_outline[@]}" \
+		 icon.padding_right=10 label.padding_left=12 label.font.size=12 label.y_offset=1
+
+# reading input method
+sketchybar --add event language_changed AppleSelectedInputSourcesChangedNotification
+
+sketchybar --add item language right \
+	   --set language icon=󰌌 script="$PLUGIN_DIR/language.sh" "${bubble_outline[@]}" label.padding_right=10 icon.font.size="20" \
+	   --set language update_freq=1 \
+	   --subscribe language mouse.clicked
+	   #--subscribe language language_changed
+
+sketchybar --add item spacer right \
+	--set spacer label=" " label.font.color="0x00000000" drawing=on \
+		label.width=0 label.padding_right=0 label.padding_right=10 \
+		padding_right=0 padding_left=0
+
+media=(
+  updates=on
+  icon.position=right
+  label.position=left
+)
+
+sketchybar --add item media_icon right \
+	--set media_icon "${media[@]}" \
+	icon.font="sketchybar-app-font:Regular:16.0" icon.padding_right=0 padding_right=0 icon.padding_left=0 padding_left=0
+
+sketchybar --add item media right \
+           --set media "${media[@]}" script="$PLUGIN_DIR/media.sh" icon=󰐎 \
+           --subscribe media media_change
+
+sketchybar --add bracket media_info media_icon media \
+	   --set media_info "${bubble_outline[@]}" padding_right=0 
+
+# put front app on top of music
+#
+sketchybar --add item front_app left \
+           --set front_app icon.drawing=on icon.font="sketchybar-app-font:Regular:16.0" script="$PLUGIN_DIR/front_app.sh" \
+           --subscribe front_app front_app_switched title_change window_focus 
+
+##### Force all scripts to run the first time (never do this in a script) #####
+sketchybar --update
