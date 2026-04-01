@@ -10,8 +10,11 @@ shift + lalt - m : yabai -m window --toggle zoom-fullscreen
 shift + lalt - e : yabai -m space --balance
 shift + lalt - t : yabai -m window --toggle float --grid 3:5:0:1:3:3
 
-
-
+# shrink lr
+shift + lalt - u : yabai -m window --resize left:50:0 
+lalt - u : yabai -m window --resize left:-50:0
+lalt - i : yabai -m window --resize right:50:0
+shift + lalt - i : yabai -m window --resize right:-50:0
 
 # -- Moving Windows Around --
 
